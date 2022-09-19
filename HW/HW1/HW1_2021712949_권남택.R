@@ -2,6 +2,7 @@
 
 
 # Data generation
+set.seed(42)
 n = 500; p = 0.3; mu1 = -2; mu2 = 2
 x1 = rnorm(n, mu1, 1)
 x2 = rnorm(n, mu2, 1)
@@ -11,10 +12,7 @@ x = z * x1 + (1 - z) * x2
 
 Kwon9 = function(x, ini_vector) {
   
-  loglik = vector()
-  mu1 = ini_vector[1]
-  mu2 = ini_vector[2]
-  p = ini_vector[3]
+  mu1 = ini_vector[1]; mu2 = ini_vector[2]; p = ini_vector[3]
   param_vec = ini_vector
   t = 1
   old_loglik = 0
@@ -24,19 +22,19 @@ Kwon9 = function(x, ini_vector) {
     
     old_loglik = sum(log(p/sqrt(2*pi) * exp(-((x-mu1)^2)/2) + (1-p)/sqrt(2*pi) * exp(-((x-mu2)^2)/2)))
     # print(old_loglik)
-    denom = p/sqrt(2*pi)*exp(-((x-mu1))^2/2) + (1-p)/sqrt(2*pi)*exp(-((x-mu2)^2)/2)
-    num1 = (-(x - mu1) * p / sqrt(2*pi) * exp(-((x - mu1)^2)/2))
-    num2 = (-(x - mu2) * (1-p) / sqrt(2*pi) * exp(-((x - mu2)^2)/2))
+    denom = p/sqrt(2*pi)*exp(-((x-mu1)^2)/2) + (1-p)/sqrt(2*pi)*exp(-((x-mu2)^2)/2)
+    num1 = ((x - mu1) * p / sqrt(2*pi) * exp(-((x - mu1)^2)/2))
+    num2 = ((x - mu2) * (1-p) / sqrt(2*pi) * exp(-((x - mu2)^2)/2))
     num3 = (exp(-((x - mu1)^2)/2) - exp(-((x - mu2)^2)/2)) / sqrt(2*pi)
   
     l_prime1 = sum(num1 / denom)
     l_prime2 = sum(num2 / denom)
     l_prime3 = sum(num3 / denom)
   
-    num11 = p / sqrt(2*pi) * exp(-((x-mu1)^2)/2) + (x-mu1)^2 * p / sqrt(2*pi) * exp(-((x-mu1)^2)/2)
-    num22 = (1-p) / sqrt(2*pi) * exp(-((x-mu2)^2)/2) + (x-mu2)^2 * (1-p) / sqrt(2*pi) * exp(-((x-mu2)^2)/2)
-    num13 = -(x-mu1) / sqrt(2*pi) * exp(-((x-mu1)^2)/2)
-    num23 = (x-mu2) / sqrt(2*pi) * exp(-((x-mu2)^2)/2)
+    num11 = -p / sqrt(2*pi) * exp(-((x-mu1)^2)/2) + (x-mu1)^2 * p / sqrt(2*pi) * exp(-((x-mu1)^2)/2)
+    num22 = -(1-p) / sqrt(2*pi) * exp(-((x-mu2)^2)/2) + (x-mu2)^2 * (1-p) / sqrt(2*pi) * exp(-((x-mu2)^2)/2)
+    num13 = (x-mu1) / sqrt(2*pi) * exp(-((x-mu1)^2)/2)
+    num23 = -(x-mu2) / sqrt(2*pi) * exp(-((x-mu2)^2)/2)
   
     l_prime11 = sum((num11*denom - num1^2) / denom^2)
     l_prime22 = sum((num22*denom - num2^2) / denom^2)
@@ -59,17 +57,29 @@ Kwon9 = function(x, ini_vector) {
   }
   
   est_mu1 = param_vec[1]; est_mu2 = param_vec[2] ; est_p = param_vec[3]
-  print(paste0("Newton-Raphson is converged in ", t-1, "steps."))
+  print(paste0("Newton-Raphson is converged in ", t-1, " steps."))
   return(c(est_mu1,est_mu2,est_p))
 }
 
-set.seed(42)
 
 ini_vector1 = c(-1, 1, 0.5)
-Kwon9(x = x, ini_vector = ini_vector1)
+Kwon9(x = x, ini_vector = ini_vector1) ## well-converged
 
 ini_vector2 = c(-1, -0.6, 0.8)
-Kwon9(x = x, ini_vector = ini_vector2)
+Kwon9(x = x, ini_vector = ini_vector2) ## local optimum : same center
 
-ini_vector3 = c(1, -1, 0.1)
+ini_vector3 = c(1, -1, 0.9)
 Kwon9(x = x, ini_vector = ini_vector3) ## Identifiablity problem rises!
+
+ini_vector4 = c(-1, -0.9, 0.1)
+Kwon9(x = x, ini_vector = ini_vector4) ## local optimum : same center at 0
+
+ini_vector5 = c(-5, 2, 0.4)
+Kwon9(x = x, ini_vector = ini_vector5) ## singular error from `solve`
+
+ini_vector6 = c(0.1, 0.1, 0.1)
+Kwon9(x = x, ini_vector = ini_vector6) ## singular error from `solve`
+
+
+
+
